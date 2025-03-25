@@ -13,27 +13,92 @@
             margin: 0;
         }
 
-        .pattern-container {
+        .spiral {
             width: 300px;
             height: 300px;
             position: relative;
             border-radius: 50%;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            animation: rotate 4s linear infinite reverse;
+            z-index: -1;
         }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
     </style>
 </head>
 <body>
-    <div class="pattern-container">
-        <svg width="300" heigh="300" viewBox="0 0 300 300">
-            <defs>
-                <mask id="circle-mask">
-                    <circle cx="150" cy="150" r="150" fill="white" />
-                </mask>
-            </defs>
-            <circle cx="150" cy="150" r="150" fill="#333" />
-            <g mask="url(#circleMask)" id="segment" />
-        </svg>
+    <div class="container">
+        <div class="spiral">
+            <svg width="300" height="300" viewBox="0 0 300 300">
+                <defs>
+                    <mask id="circle-mask">
+                        <circle cx="150" cy="150" r="150" fill="white" />
+                    </mask>
+                </defs>
+                <circle cx="150" cy="150" r="150" fill="#333" />
+                <g mask="url(#circleMask)" id="sections" />
+            </svg>
+        </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sectionsContainer = document.getElementById('sections');
+            const numSections = 8;
+            const centerX = 150;
+            const centerY = 150;
+            const radius = 150;
+            const colors = ['#8b0000', '#000000'];
+            const curveFactor = 0.4;
+            const clockwise = true;
+
+            for (let i = 0; i < numSections; i++) {
+                const startAngle = (i / numSections) * Math.PI * 2;
+                const endAngle = ((i +1) / numSections) * Math.PI * 2;
+                const color = colors[i % 2];
+
+                const startX = centerX + radius * Math.cos(startAngle);
+                const startY = centerY + radius * Math.sin(startAngle);
+                const endX = centerX + radius * Math.cos(endAngle);
+                const endY = centerY + radius * Math.sin(endAngle);
+
+                const angleOffset = clockwise ? -Math.PI / 4 : Math.PI / 4;
+
+                const ctrlAngle1 = startAngle + angleOffset;
+                const ctrlDistance1 = radius * 0.5;
+                const ctrlX1 = centerX + ctrlDistance1 * Math.cos(ctrlAngle1);
+                const ctrlY1 = centerY + ctrlDistance1 * Math.sin(ctrlAngle1);
+
+                const ctrlAngle2 = endAngle + angleOffset;
+                const ctrlDistance2 = radius * 0.5;
+                const ctrlX2 = centerX + ctrlDistance2 * Math.cos(ctrlAngle2);
+                const ctrlY2 = centerY + ctrlDistance2 * Math.sin(ctrlAngle2);
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+
+                const d = `
+                    M ${centerX} ${centerY}
+                    Q ${ctrlX1} ${ctrlY1}, ${startX} ${startY}
+                    A ${radius} ${radius} 0 0 1 ${endX} ${endY}
+                    Q ${ctrlX2} ${ctrlY2}, ${centerX} ${centerY}
+                    Z
+                `;
+
+                path.setAttribute('d', d);
+                path.setAttribute('fill', color);
+
+                sectionsContainer.appendChild(path);
+            }
+        });
+    </script>
 </body>
 </html>
